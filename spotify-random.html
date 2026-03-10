@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shuffle Universe</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080b0f;
+  --surface: #0f1318;
+  --surface2: #161c23;
+  --green: #1DB954;
+  --green-dim: rgba(29,185,84,0.2);
+  --green-glow: rgba(29,185,84,0.4);
+  --text: #eef0f2;
+  --muted: #5a6370;
+  --border: rgba(255,255,255,0.06);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  overflow-x: hidden;
+}
+
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(130px);
+  pointer-events: none;
+  z-index: 0;
+}
+.blob-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(29,185,84,0.1), transparent 70%);
+  top: -200px; left: -200px;
+  animation: drift1 14s ease-in-out infinite alternate;
+}
+.blob-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(80,120,255,0.08), transparent 70%);
+  bottom: -100px; right: -100px;
+  animation: drift2 18s ease-in-out infinite alternate;
+}
+@keyframes drift1 { to { transform: translate(100px, 80px); } }
+@keyframes drift2 { to { transform: translate(-80px, -100px); } }
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+header { text-align: center; }
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.2rem, 11vw, 5.5rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff 20%, var(--green) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tagline {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: 0.3rem;
+}
+
+/* LOGIN */
+#loginScreen { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
+
+.login-card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.spotify-logo {
+  width: 48px; height: 48px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.spotify-logo svg { width: 26px; height: 26px; }
+.login-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.08em; }
+.login-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; max-width: 300px; }
+.login-btn {
+  margin-top: 0.5rem;
+  padding: 0.85rem 2rem;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 500;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem;
+  transition: filter 0.2s, transform 0.15s;
+}
+.login-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* APP */
+#appScreen { width: 100%; display: none; flex-direction: column; align-items: center; gap: 1.5rem; }
+#appScreen.visible { display: flex; }
+
+.user-bar {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+}
+.user-info { display: flex; align-items: center; gap: 0.6rem; }
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--green-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: var(--green); font-weight: 500;
+  overflow: hidden;
+}
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.user-name { font-size: 0.8rem; }
+.logout-btn {
+  background: none; border: none; color: var(--muted);
+  font-size: 0.72rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  transition: color 0.2s;
+}
+.logout-btn:hover { color: var(--text); }
+
+.genre-row { display: flex; gap: 0.45rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+.genre-pill {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border-radius: 50px; cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.genre-pill:hover, .genre-pill.active {
+  border-color: var(--green); color: var(--green); background: var(--green-dim);
+}
+
+.card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.5s ease;
+}
+.card.lit { box-shadow: 0 0 80px var(--green-glow), 0 24px 70px rgba(0,0,0,0.6); }
+
+.embed-wrapper {
+  width: 100%; min-height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface);
+}
+.embed-wrapper iframe { display: block; border: none; }
+
+.placeholder {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.75rem; padding: 3rem 2rem; color: var(--muted);
+}
+.placeholder-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 2px dashed rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+}
+.placeholder p { font-size: 0.82rem; letter-spacing: 0.06em; }
+
+.song-info {
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  opacity: 0; transform: translateY(5px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.song-info.visible { opacity: 1; transform: none; }
+.song-meta { display: flex; flex-direction: column; min-width: 0; }
+.song-title { font-weight: 500; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-artist { font-size: 0.76rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.open-btn {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 0.4rem;
+  background: var(--green); color: #000;
+  font-family: 'DM Sans', sans-serif; font-size: 0.76rem; font-weight: 500;
+  padding: 0.42rem 0.85rem; border-radius: 50px;
+  text-decoration: none;
+  transition: filter 0.2s, transform 0.15s;
+}
+.open-btn:hover { filter: brightness(1.1); transform: scale(1.04); }
+.open-btn svg { width: 12px; height: 12px; }
+
+.shuffle-btn {
+  width: 100%; padding: 1.1rem;
+  background: var(--green); color: #000; border: none;
+  border-radius: 14px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.55rem; letter-spacing: 0.14em;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  transition: transform 0.15s, filter 0.2s;
+  position: relative; overflow: hidden;
+}
+.shuffle-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.shuffle-btn:active { transform: scale(0.99) translateY(1px); }
+.shuffle-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; filter: none; }
+
+.spin-icon { display: inline-block; }
+.shuffle-btn.spinning .spin-icon { animation: spin360 0.55s ease-out forwards; }
+@keyframes spin360 { to { transform: rotate(360deg); } }
+
+.counter { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.05em; }
+.counter span { color: var(--green); font-weight: 500; }
+.status { font-size: 0.78rem; color: var(--muted); text-align: center; min-height: 1.2rem; }
+.status.error { color: #ff6b6b; }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="container">
+  <header>
+    <div class="logo">Shuffle Universe</div>
+    <div class="tagline">Millions of songs &middot; One click away</div>
+  </header>
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-card">
+      <div class="spotify-logo">
+        <svg viewBox="0 0 24 24" fill="black"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      </div>
+      <h2>Connect Spotify</h2>
+      <p>Log in with your Spotify account to shuffle from millions of real tracks across any genre.</p>
+      <button class="login-btn" onclick="loginWithSpotify()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+        Log in with Spotify
+      </button>
+      <p id="loginError" style="color:#ff6b6b;font-size:0.8rem;display:none;"></p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appScreen">
+    <div class="user-bar">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">♪</div>
+        <div class="user-name" id="userName">Loading…</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+
+    <div class="genre-row" id="genres">
+      <button class="genre-pill active" data-genre="pop">Pop</button>
+      <button class="genre-pill" data-genre="hip-hop">Hip-Hop</button>
+      <button class="genre-pill" data-genre="rock">Rock</button>
+      <button class="genre-pill" data-genre="electronic">Electronic</button>
+      <button class="genre-pill" data-genre="r-n-b">R&amp;B</button>
+      <button class="genre-pill" data-genre="indie">Indie</button>
+      <button class="genre-pill" data-genre="jazz">Jazz</button>
+      <button class="genre-pill" data-genre="metal">Metal</button>
+      <button class="genre-pill" data-genre="latin">Latin</button>
+      <button class="genre-pill" data-genre="classical">Classical</button>
+      <button class="genre-pill" data-genre="country">Country</button>
+      <button class="genre-pill" data-genre="k-pop">K-Pop</button>
+    </div>
+
+    <div class="card" id="card">
+      <div class="embed-wrapper" id="embedWrapper">
+        <div class="placeholder" id="placeholder">
+          <div class="placeholder-icon">♪</div>
+          <p>Hit shuffle to discover a track</p>
+        </div>
+      </div>
+      <div class="song-info" id="songInfo">
+        <div class="song-meta">
+          <div class="song-title" id="songTitle">—</div>
+          <div class="song-artist" id="songArtist">—</div>
+        </div>
+        <a class="open-btn" id="openBtn" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+          Open in Spotify
+        </a>
+      </div>
+    </div>
+
+    <button class="shuffle-btn" id="shuffleBtn" onclick="shuffle()">
+      <span class="spin-icon" id="spinIcon">⟳</span>
+      <span id="btnText">SHUFFLE</span>
+    </button>
+
+    <div class="status" id="status"></div>
+    <div class="counter" id="counter" style="display:none">Discovered <span id="countNum">0</span> tracks this session</div>
+  </div>
+</div>
+
+<script>
+const CLIENT_ID = 'be03187bc83a4b66a9a339b351baac25';
+const REDIRECT_URI = 'https://claude.ai/chat/5232a29c-46b7-476d-a691-dbcda9bbb0ab?artifactId=spotify-random.html';
+const SCOPES = 'user-read-private user-read-email';
+
+let accessToken = null;
+let shuffleCount = 0;
+let activeGenre = 'pop';
+let lastTrackId = null;
+
+// PKCE helpers
+function generateRandom(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+}
+async function sha256(plain) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
+}
+function base64urlencode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+async function loginWithSpotify() {
+  const verifier = generateRandom(64);
+  const challenge = base64urlencode(await sha256(verifier));
+  sessionStorage.setItem('pkce_verifier', verifier);
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: REDIRECT_URI,
+    scope: SCOPES,
+    code_challenge_method: 'S256',
+    code_challenge: challenge,
+  });
+  window.location.href = 'https://accounts.spotify.com/authorize?' + params;
+}
+
+async function exchangeCode(code) {
+  const verifier = sessionStorage.getItem('pkce_verifier');
+  if (!verifier) return null;
+  const body = new URLSearchParams({
+    client_id: CLIENT_ID,
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: REDIRECT_URI,
+    code_verifier: verifier,
+  });
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  sessionStorage.removeItem('pkce_verifier');
+  return data.access_token;
+}
+
+function logout() {
+  accessToken = null;
+  sessionStorage.removeItem('spotify_token');
+  document.getElementById('appScreen').classList.remove('visible');
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  const wrapper = document.getElementById('embedWrapper');
+  const iframe = wrapper.querySelector('iframe');
+  if (iframe) iframe.remove();
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('songInfo').classList.remove('visible');
+  document.getElementById('card').classList.remove('lit');
+  shuffleCount = 0;
+  document.getElementById('counter').style.display = 'none';
+}
+
+async function loadUser() {
+  try {
+    const res = await fetch('https://api.spotify.com/v1/me', {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('userName').textContent = data.display_name || data.id;
+    const avatarEl = document.getElementById('userAvatar');
+    if (data.images && data.images.length > 0) {
+      avatarEl.innerHTML = `<img src="${data.images[0].url}" alt="">`;
+    } else {
+      avatarEl.textContent = (data.display_name || '?')[0].toUpperCase();
+    }
+  } catch(e) {}
+}
+
+async function getRandomTrack(genre) {
+  const randomOffset = Math.floor(Math.random() * 900);
+  const letter = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+  const q = encodeURIComponent(`genre:${genre} ${letter}`);
+  const url = `https://api.spotify.com/v1/search?q=${q}&type=track&limit=20&offset=${randomOffset}`;
+  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
+  if (res.status === 401) { logout(); return null; }
+  if (!res.ok) throw new Error('Search failed');
+  const data = await res.json();
+  let items = data.tracks?.items || [];
+  if (items.length === 0) {
+    // fallback: try with offset 0
+    const res2 = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=50&offset=0`, {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    const data2 = await res2.json();
+    items = data2.tracks?.items || [];
+  }
+  if (items.length === 0) return null;
+  const pool = items.filter(t => t.id !== lastTrackId);
+  return (pool.length > 0 ? pool : items)[Math.floor(Math.random() * (pool.length || items.length))];
+}
+
+async function shuffle() {
+  const btn = document.getElementById('shuffleBtn');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.classList.add('spinning');
+  document.getElementById('btnText').textContent = 'FINDING…';
+  setStatus('');
+  try {
+    const track = await getRandomTrack(activeGenre);
+    if (!track) { setStatus('No tracks found — try another genre!', true); return; }
+    lastTrackId = track.id;
+    renderTrack(track);
+    shuffleCount++;
+    document.getElementById('counter').style.display = 'block';
+    document.getElementById('countNum').textContent = shuffleCount;
+  } catch(e) {
+    setStatus('Something went wrong, try again!', true);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('spinning');
+    document.getElementById('btnText').textContent = 'SHUFFLE';
+  }
+}
+
+function renderTrack(track) {
+  const wrapper = document.getElementById('embedWrapper');
+  document.getElementById('placeholder').style.display = 'none';
+  const old = wrapper.querySelector('iframe');
+  if (old) old.remove();
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`;
+  iframe.width = '100%';
+  iframe.height = '152';
+  iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+  iframe.loading = 'lazy';
+  wrapper.appendChild(iframe);
+  document.getElementById('songTitle').textContent = track.name;
+  document.getElementById('songArtist').textContent = track.artists.map(a => a.name).join(', ');
+  document.getElementById('openBtn').href = track.external_urls?.spotify || `https://open.spotify.com/track/${track.id}`;
+  const info = document.getElementById('songInfo');
+  info.classList.remove('visible');
+  requestAnimationFrame(() => requestAnimationFrame(() => info.classList.add('visible')));
+  document.getElementById('card').classList.add('lit');
+}
+
+function setStatus(msg, isError = false) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (isError ? ' error' : '');
+}
+
+document.getElementById('genres').addEventListener('click', e => {
+  const pill = e.target.closest('.genre-pill');
+  if (!pill) return;
+  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeGenre = pill.dataset.genre;
+});
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'flex';
+  document.getElementById('appScreen').classList.add('visible');
+  loadUser();
+}
+
+async function init() {
+  const stored = sessionStorage.getItem('spotify_token');
+  if (stored) { accessToken = stored; showApp(); return; }
+
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const error = params.get('error');
+
+  if (error) {
+    const errEl = document.getElementById('loginError');
+    errEl.textContent = 'Login was cancelled. Try again!';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (code) {
+    window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+    const token = await exchangeCode(code);
+    if (token) {
+      accessToken = token;
+      sessionStorage.setItem('spotify_token', token);
+      showApp();
+    } else {
+      const errEl = document.getElementById('loginError');
+      errEl.textContent = 'Token exchange failed. Please try again.';
+      errEl.style.display = 'block';
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>
